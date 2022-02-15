@@ -1,5 +1,5 @@
 * {
-  margin: 0;
+  margin: auto 0;
   box-sizing: border-box;
 }
 
@@ -10,12 +10,11 @@ body {
 header {
   display: flex;
   justify-content: center;
+  height: 20vh;
 }
 
 .header__logo {
   width: 18rem;
-  padding-top: 1rem;
-  padding-bottom: 1rem;
 }
 
 .got__container {
@@ -23,26 +22,22 @@ header {
   flex-direction: column;
   justify-content: center;
   align-items: center;
+  height: 40vh;
   background-color: #424952;
 }
 
 .got__character {
   font-size: 3rem;
-  padding-top: 2rem;
   color: whitesmoke;
 }
 
 .got__quote {
   font-size: 1.75rem;
-  text-align: center;
-  padding-top: 1.5rem;
   color: whitesmoke;
 }
 
 .got__button {
   width: 50%;
-  margin-top: 1rem;
-  margin-bottom: 1rem;
   padding-top: 0.25rem;
   padding-bottom: 0.25rem;
   background-color: #100c08;
@@ -58,7 +53,7 @@ header {
 .got__song-container {
   display: flex;
   justify-content: center;
-  padding: 20px 0;
+  height: 40vh;
   background-color: #202a44;
 }
 
