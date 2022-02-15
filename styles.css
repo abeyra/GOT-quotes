@@ -1,4 +1,25 @@
+body {
+  font-family: "Tangerine", cursive;
+}
+
 .got__container {
-  background-color: blue;
-  /*test*/
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.got__character {
+  font-size: 3rem;
+  text-align: center;
+}
+
+.got__quote {
+  font-size: 1.75rem;
+  margin: 0, auto;
+  text-align: center;
+}
+
+.got__button {
+  width: 50%;
+  margin-left: 5rem;
 }/*# sourceMappingURL=styles.css.map */
