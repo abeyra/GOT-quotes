@@ -1,5 +1,5 @@
 * {
-  margin: auto, 0;
+  margin: auto 0;
   box-sizing: border-box;
 }
 
@@ -12,12 +12,13 @@ header {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  height: 23vh;
+  height: 20vh;
   padding-top: 1rem;
 }
 
 .header__logo {
   width: 18rem;
+  margin: 0;
 }
 
 .header__title {
@@ -25,7 +26,7 @@ header {
   text-align: center;
   font-family: cursive;
   font-size: 1rem;
-  padding-bottom: 0.5rem;
+  margin: 1rem 0;
 }
 
 .got__container {
@@ -36,11 +37,9 @@ header {
   background-color: #424952;
   border: 1px solid whitesmoke;
   border-radius: 3rem;
-  margin-right: 1rem;
-  margin-left: 1rem;
-  margin-bottom: 2rem;
-  margin-top: 2rem;
-  /* height: 40vh; */
+  margin-bottom: 4rem;
+  height: 400px;
+  width: 50vw;
 }
 
 .got__character {
@@ -50,7 +49,7 @@ header {
 }
 
 .got__quote {
-  font-size: 1.75rem;
+  font-size: 2.75rem;
   text-align: center;
   padding-right: 1rem;
   padding-left: 1rem;
@@ -76,8 +75,6 @@ header {
 .got__song-container {
   display: flex;
   justify-content: center;
-  margin-top: 3rem;
-  height: 25vh;
 }
 
 .got__soundtrack {
@@ -115,12 +112,12 @@ h1 {
   justify-content: center;
   align-content: center;
   align-items: center;
+  height: 75vh;
 }
 
 .hero__content {
   position: relative;
   align-self: center;
-  padding: 3rem 0;
 }
 
 .snow {
