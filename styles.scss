@@ -21,29 +21,29 @@ header {
 .got__container {
   display: flex;
   flex-direction: column;
-  background-color: #424952;
+  justify-content: center;
+  align-items: center;
 }
 
 .got__character {
   font-size: 3rem;
-  text-align: center;
-  color: white;
-  padding-top: 2rem;
-  padding-bottom: 1.5rem;
 }
 
 .got__quote {
   font-size: 1.75rem;
-  margin: 0, auto;
-  text-align: center;
-  color: white;
-  margin-left: 1rem;
-  margin-right: 1rem;
-  padding-bottom: 1rem;
 }
 
 .got__button {
   width: 50%;
-  margin-left: 5rem;
-  margin-bottom: 2rem;
+}
+
+.got__song-container {
+  display: flex;
+  justify-content: center;
+  margin: 20px 0;
+}
+
+.got__soundtrack {
+  width: 50%;
+  height: 100px;
 }

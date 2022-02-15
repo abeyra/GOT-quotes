@@ -18,7 +18,7 @@ axios.get(url).then(response => {
     quoteContainer.classList.add("got__quote"); 
     quoteContainer.innerText = characterQuote; 
 
-    var gotButton = document.createElement("button"); 
+    let gotButton = document.createElement("button"); 
     gotButton.classList.add("got__button"); 
     gotButton.innerText = "Get New Quote"; 
 
@@ -26,19 +26,20 @@ axios.get(url).then(response => {
     gotContainer.appendChild(quoteContainer);
     gotContainer.appendChild(gotButton); 
     
-}); 
+}).then(response =>{
+    let gotButton = document.querySelector(".got__button"); 
 
-// let gotButton = document.querySelector(".got__button"); 
-console.log(gotButton);
-
-
-button.addEventListener("submit", function(event){
+    gotButton.addEventListener("click", function(event){
     // event.preventDefault(); 
     console.log("button clicked!");
+    axios.get(url).then(response => {
+            let character = response.data.character.name; 
+            let gotCharacter = document.querySelector(".got__character");
+            gotCharacter.innerText = character; 
+
+            let characterQuote = response.data.sentence; 
+            let quoteContainer = document.querySelector(".got__quote");
+            quoteContainer.innerText = characterQuote;
+        });
     });
-
-// button.addEventlistener("submit", function(event){
-//     // event.preventDefault(); 
-
-//     console.log("button clicked!");
-// });
+}); 
