@@ -19,4 +19,15 @@ body {
 
 .got__button {
   width: 50%;
+}
+
+.got__song-container {
+  display: flex;
+  justify-content: center;
+  margin: 20px 0;
+}
+
+.got__soundtrack {
+  width: 50%;
+  height: 100px;
 }/*# sourceMappingURL=styles.css.map */

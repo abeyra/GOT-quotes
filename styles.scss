@@ -1,22 +1,33 @@
 body {
-  font-family: "Tangerine", cursive;
+    font-family: "Tangerine", cursive;
 }
 
 .got__container {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
 }
 
 .got__character {
-  font-size: 3rem;
+    font-size: 3rem;
 }
 
 .got__quote {
-  font-size: 1.75rem;
+    font-size: 1.75rem;
 }
 
 .got__button {
-  width: 50%;
+    width: 50%;
+}
+
+.got__song-container {
+    display: flex;
+    justify-content: center;
+    margin: 20px 0; 
+}
+
+.got__soundtrack {
+    width: 50%; 
+    height: 100px;
 }
