@@ -38,21 +38,21 @@ header {
   border: 1px solid whitesmoke;
   border-radius: 3rem;
   margin-bottom: 4rem;
-  height: 400px;
+  height: 250px;
   width: 50vw;
 }
 
 .got__character {
-  font-size: 3rem;
+  font-size: 1rem;
+  padding: 1rem;
   text-align: center;
   color: whitesmoke;
 }
 
 .got__quote {
-  font-size: 2.75rem;
+  font-size: 1rem;
   text-align: center;
-  padding-right: 1rem;
-  padding-left: 1rem;
+  padding: 1rem;
   color: whitesmoke;
 }
 
@@ -64,7 +64,7 @@ header {
   background-color: #100c08;
   color: #c38d5f;
   font-family: cursive;
-  font-size: 1rem;
+  font-size: 10px;
 }
 
 .got__button:hover {
@@ -158,5 +158,39 @@ h1 {
 @keyframes fall {
   100% {
     transform: translateY(0);
+  }
+}
+@media screen and (min-width: 450px) {
+  .got__container {
+    height: 380px;
+  }
+
+  .got__character {
+    font-size: 2rem;
+  }
+
+  .got__quote {
+    font-size: 2rem;
+  }
+
+  .got__button {
+    font-size: 12px;
+  }
+}
+@media screen and (min-width: 768px) {
+  .got__container {
+    height: 420px;
+  }
+
+  .got__character {
+    font-size: 3rem;
+  }
+
+  .got__quote {
+    font-size: 2.75rem;
+  }
+
+  .got__button {
+    font-size: 1rem;
   }
 }/*# sourceMappingURL=styles.css.map */
