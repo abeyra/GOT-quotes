@@ -65,6 +65,7 @@ header {
   color: #c38d5f;
   font-family: cursive;
   font-size: 10px;
+  cursor: pointer;
 }
 
 .got__button:hover {
