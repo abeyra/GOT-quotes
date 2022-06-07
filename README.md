@@ -7,7 +7,8 @@ I connected to a game of thrones api and pulled data from it and placed it into 
 Site can be accessed at 
 www.got-quotes.com
 
+
 ## Technical Stack
--HTML
--CSS
--Javascript 
+- HTML
+- CSS
+- Javascript 
