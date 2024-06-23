@@ -120,6 +120,10 @@ h1 {
 }
 
 footer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 5vh;
   padding-top: 0.25rem;
   padding-bottom: 0.25rem;
   background-color: lightgrey;
