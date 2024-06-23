@@ -1,9 +1,7 @@
-const url ='https://game-of-thrones-quotes.herokuapp.com/v1/random';
+const url = 'https://api.gameofthronesquotes.xyz/v1/random';
 
 axios.get(url).then(response => {
-    console.log(response.data);
-    console.log(response.data.character.name); 
-    console.log(response.data.sentence);
+    console.log('firing');
 
     const character = response.data.character.name; 
     const characterQuote = response.data.sentence; 
@@ -25,14 +23,12 @@ axios.get(url).then(response => {
     gotContainer.appendChild(gotCharacter); 
     gotContainer.appendChild(quoteContainer);
     gotContainer.appendChild(gotButton); 
-    
-}).then(response =>{
-    let gotButton = document.querySelector(".got__button"); 
 
+    // Add event listener here after the button is added to the DOM
+    console.log(gotButton)
     gotButton.addEventListener("click", function(event){
-    // event.preventDefault(); 
-    console.log("button clicked!");
-    axios.get(url).then(response => {
+        axios.get(url).then(response => {
+            console.log('click');
             let character = response.data.character.name; 
             let gotCharacter = document.querySelector(".got__character");
             gotCharacter.innerText = character; 
@@ -42,4 +38,9 @@ axios.get(url).then(response => {
             quoteContainer.innerText = characterQuote;
         });
     });
-}); 
+
+})
+
+.catch(error => {
+    console.error('Error fetching the data:', error);
+});
