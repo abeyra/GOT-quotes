@@ -105,7 +105,8 @@ h1 {
 
 .got__button:hover {
   background-color: #100c08;
-  color: #c38d5f;
+  color: white;
+  transition: all 500ms ease;
 }
 
 .got__song-container {
