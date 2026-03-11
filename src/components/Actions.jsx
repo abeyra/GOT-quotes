@@ -1,5 +1,6 @@
 export default function Actions({
   historyIndex,
+  canGoNext,
   isFavorite,
   onPrev,
   onNext,
@@ -33,6 +34,7 @@ export default function Actions({
       <button
         className="got__nav-btn got__nav-btn--next"
         aria-label="Next quote"
+        disabled={!canGoNext}
         onClick={onNext}
       >
         &#8594;

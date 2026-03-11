@@ -1,6 +1,32 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { getFavoriteKey } from '../constants.js';
+
+const SORT_OPTIONS = [
+  { value: 'added', label: 'Date Added' },
+  { value: 'character', label: 'Character' },
+  { value: 'house', label: 'House' },
+];
+
+function sortedFavorites(favorites, sortBy) {
+  const copy = [...favorites];
+  if (sortBy === 'character') {
+    copy.sort((a, b) => a.character.name.localeCompare(b.character.name));
+  } else if (sortBy === 'house') {
+    copy.sort((a, b) => {
+      const ha = a.character.house?.name ?? 'zzz';
+      const hb = b.character.house?.name ?? 'zzz';
+      return ha.localeCompare(hb);
+    });
+  } else {
+    // 'added': sort by savedAt ascending (oldest first = order added); reverse for newest first
+    copy.sort((a, b) => (b.savedAt ?? 0) - (a.savedAt ?? 0));
+  }
+  return copy;
+}
 
 export default function FavoritesModal({ isOpen, favorites, onClose, onRemove }) {
+  const [sortBy, setSortBy] = useState('added');
+
   useEffect(() => {
     if (!isOpen) return;
     const handler = (e) => {
@@ -9,6 +35,8 @@ export default function FavoritesModal({ isOpen, favorites, onClose, onRemove })
     document.addEventListener('keydown', handler);
     return () => document.removeEventListener('keydown', handler);
   }, [isOpen, onClose]);
+
+  const displayed = sortedFavorites(favorites, sortBy);
 
   return (
     <div
@@ -27,20 +55,41 @@ export default function FavoritesModal({ isOpen, favorites, onClose, onRemove })
           </button>
         </div>
 
-        <ul className="got__modal__list">
-          {favorites.map((q, i) => (
-            <li key={`${q.character.name}::${q.sentence}`} className="got__modal__item">
-              <strong className="got__modal__item-char">{q.character.name}</strong>
-              <p className="got__modal__item-quote">&quot;{q.sentence}&quot;</p>
+        {favorites.length > 0 && (
+          <div className="got__modal__sort">
+            <span className="got__modal__sort-label">Sort by:</span>
+            {SORT_OPTIONS.map((opt) => (
               <button
-                className="got__modal__item-remove"
-                aria-label="Remove"
-                onClick={() => onRemove(i)}
+                key={opt.value}
+                className={`got__modal__sort-btn${sortBy === opt.value ? ' got__modal__sort-btn--active' : ''}`}
+                onClick={() => setSortBy(opt.value)}
               >
-                &times;
+                {opt.label}
               </button>
-            </li>
-          ))}
+            ))}
+          </div>
+        )}
+
+        <ul className="got__modal__list">
+          {displayed.map((q) => {
+            const key = getFavoriteKey(q);
+            return (
+              <li key={key} className="got__modal__item">
+                <strong className="got__modal__item-char">{q.character.name}</strong>
+                {q.character.house && (
+                  <span className="got__modal__item-house">{q.character.house.name}</span>
+                )}
+                <p className="got__modal__item-quote">&quot;{q.sentence}&quot;</p>
+                <button
+                  className="got__modal__item-remove"
+                  aria-label={`Remove quote by ${q.character.name}`}
+                  onClick={() => onRemove(key)}
+                >
+                  &times;
+                </button>
+              </li>
+            );
+          })}
         </ul>
 
         {favorites.length === 0 && (

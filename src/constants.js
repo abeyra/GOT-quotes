@@ -16,7 +16,8 @@ export function getFavoriteKey(quote) {
 }
 
 export function buildTwitterUrl(quote) {
-  const housePart = quote.character.house ? ` (House ${quote.character.house.name})` : '';
+  // house names in data already include "House" prefix (e.g. "House Stark of Winterfell")
+  const housePart = quote.character.house ? ` (${quote.character.house.name})` : '';
   const text = encodeURIComponent(`"${quote.sentence}" — ${quote.character.name}${housePart} #GameOfThrones`);
   return `https://twitter.com/intent/tweet?text=${text}`;
 }

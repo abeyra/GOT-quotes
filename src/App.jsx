@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import {
   getFavoriteKey,
   buildTwitterUrl,
@@ -10,6 +10,8 @@ import {
   getRandomQuote,
   getRandomQuoteByChar,
   getRandomQuoteByHouse,
+  searchQuotes,
+  getAvailableCount,
 } from './localData.js';
 
 import Header from './components/Header.jsx';
@@ -35,6 +37,7 @@ export default function App() {
   const [isLoading, setIsLoading] = useState(false);
   const [houseSlug, setHouseSlug] = useState(null);
   const [charSlug, setCharSlug] = useState(null);
+  const [searchTerm, setSearchTerm] = useState('');
   const [isFading, setIsFading] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
@@ -52,6 +55,12 @@ export default function App() {
     ? favorites.some((f) => getFavoriteKey(f) === getFavoriteKey(currentQuote))
     : false;
   const twitterUrl = currentQuote ? buildTwitterUrl(currentQuote) : '#';
+  const availableCount = useMemo(
+    () => getAvailableCount(houseSlug, charSlug, searchTerm),
+    [houseSlug, charSlug, searchTerm]
+  );
+  // Can go next if there's forward history, or if the pool has more than one quote
+  const canGoNext = historyIndex < historyRef.current.length - 1 || availableCount > 1;
 
   // --- Effects ---
 
@@ -59,31 +68,32 @@ export default function App() {
   useEffect(() => {
     setHouses(getHouses());
     setCharacters(getCharacters());
-    fetchQuote(null, null);
+    fetchQuote(null, null, '');
     initializedRef.current = true;
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, []); // fetchQuote is a plain function in component scope; no stale closure risk
 
-  // Filter change: reset history, fetch new quote
+  // Filter/search change: reset history and fetch a new quote
   useEffect(() => {
     if (!initializedRef.current) return;
     historyRef.current = [];
     setHistoryIndex(-1);
-    fetchQuote(houseSlug, charSlug);
-  }, [houseSlug, charSlug]); // eslint-disable-line react-hooks/exhaustive-deps
+    fetchQuote(houseSlug, charSlug, searchTerm);
+  }, [houseSlug, charSlug, searchTerm]); // fetchQuote reads only its own params; no stale closure risk
 
-  // Persist favorites
+  // Persist favorites to localStorage
   useEffect(() => {
     localStorage.setItem('got-favorites', JSON.stringify(favorites));
   }, [favorites]);
 
-  // Apply house theme whenever currentQuote changes
+  // Apply house theme whenever the displayed quote changes
   useEffect(() => {
-    const slug = currentQuote?.character?.house?.slug ?? null;
-    applyHouseTheme(slug);
+    applyHouseTheme(currentQuote?.character?.house?.slug ?? null);
   }, [currentQuote]);
 
-  // --- Core fetch function ---
-  function fetchQuote(houseSlug, charSlug) {
+  // --- Private helpers (plain functions — no stale closure risk, no useCallback needed) ---
+
+  // Fetches a new quote for the active filter, skipping already-seen sentences where possible.
+  function fetchQuote(house, char, term, exclude = new Set()) {
     if (isLoadingRef.current) return;
     isLoadingRef.current = true;
     setIsLoading(true);
@@ -91,15 +101,12 @@ export default function App() {
 
     try {
       let quote;
-      if (houseSlug) {
-        quote = getRandomQuoteByHouse(houseSlug);
-        if (!quote) throw new Error(`No quotes found for house: ${houseSlug}`);
-      } else if (charSlug) {
-        quote = getRandomQuoteByChar(charSlug);
-        if (!quote) throw new Error(`No quotes found for character: ${charSlug}`);
-      } else {
-        quote = getRandomQuote();
-      }
+      if (term)  quote = searchQuotes(term, exclude);
+      else if (house) quote = getRandomQuoteByHouse(house, exclude);
+      else if (char)  quote = getRandomQuoteByChar(char, exclude);
+      else            quote = getRandomQuote(exclude);
+
+      if (!quote) throw new Error('No quotes found for the active filter.');
 
       setTimeout(() => {
         historyRef.current.push(quote);
@@ -108,7 +115,7 @@ export default function App() {
         setIsFading(false);
       }, 300);
     } catch (err) {
-      console.error('Error fetching the data:', err);
+      console.error('Error fetching quote:', err);
       setIsFading(false);
     } finally {
       isLoadingRef.current = false;
@@ -116,67 +123,93 @@ export default function App() {
     }
   }
 
-  // --- Callbacks ---
-
-  const handleGetNewQuote = useCallback(() => {
-    fetchQuote(houseSlug, charSlug);
-  }, [houseSlug, charSlug]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  const navigatePrev = useCallback(() => {
-    const newIndex = historyIndex - 1;
-    if (newIndex < 0) return;
-    const quote = historyRef.current[newIndex];
+  // Transitions to a quote already in history with a fade animation.
+  function showWithFade(quote, index) {
     setIsFading(true);
     setTimeout(() => {
       setCurrentQuote(quote);
-      setHistoryIndex(newIndex);
+      setHistoryIndex(index);
       setIsFading(false);
     }, 300);
+  }
+
+  // Returns a Set of all sentences already shown in history, used to avoid repeats.
+  function getSeenSentences() {
+    return new Set(historyRef.current.map((q) => q.sentence));
+  }
+
+  // --- Callbacks ---
+
+  const handleGetNewQuote = useCallback(() => {
+    fetchQuote(houseSlug, charSlug, searchTerm, getSeenSentences());
+  }, [houseSlug, charSlug, searchTerm]); // fetchQuote reads only its own params; no stale closure risk
+
+  const navigatePrev = useCallback(() => {
+    const newIndex = historyIndex - 1;
+    if (newIndex >= 0) showWithFade(historyRef.current[newIndex], newIndex);
   }, [historyIndex]);
 
   const navigateNext = useCallback(() => {
     const newIndex = historyIndex + 1;
     if (newIndex < historyRef.current.length) {
-      const quote = historyRef.current[newIndex];
-      setIsFading(true);
-      setTimeout(() => {
-        setCurrentQuote(quote);
-        setHistoryIndex(newIndex);
-        setIsFading(false);
-      }, 300);
+      showWithFade(historyRef.current[newIndex], newIndex);
     } else {
-      fetchQuote(houseSlug, charSlug);
+      fetchQuote(houseSlug, charSlug, searchTerm, getSeenSentences());
     }
-  }, [historyIndex, houseSlug, charSlug]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [historyIndex, houseSlug, charSlug, searchTerm]); // fetchQuote reads only its own params; no stale closure risk
 
   const onHouseChange = useCallback((slug) => {
     setHouseSlug(slug);
     setCharSlug(null);
+    setSearchTerm('');
   }, []);
 
   const onCharChange = useCallback((slug) => {
     setCharSlug(slug);
     setHouseSlug(null);
+    setSearchTerm('');
+  }, []);
+
+  const handleSearch = useCallback((term) => {
+    setSearchTerm(term);
+    setHouseSlug(null);
+    setCharSlug(null);
   }, []);
 
   const toggleFavorite = useCallback(() => {
     if (!currentQuote) return;
     const key = getFavoriteKey(currentQuote);
     setFavorites((prev) => {
-      const idx = prev.findIndex((f) => getFavoriteKey(f) === key);
-      if (idx === -1) return [...prev, currentQuote];
-      return prev.filter((_, i) => i !== idx);
+      const exists = prev.findIndex((f) => getFavoriteKey(f) === key) !== -1;
+      if (!exists) return [...prev, { ...currentQuote, savedAt: Date.now() }];
+      return prev.filter((f) => getFavoriteKey(f) !== key);
     });
   }, [currentQuote]);
 
-  const toggleShare = useCallback(() => {
-    setShareOpen((prev) => !prev);
-  }, []);
+  const toggleShare = useCallback(() => setShareOpen((prev) => !prev), []);
+
+  // Keyboard navigation — placed after callbacks to avoid temporal dead zone errors
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      const tag = e.target.tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+      if (modalOpen || isLoadingRef.current) return;
+      switch (e.key) {
+        case 'ArrowLeft':  navigatePrev();    break;
+        case 'ArrowRight': navigateNext();    break;
+        case 'f': case 'F': toggleFavorite(); break;
+        case 's': case 'S': toggleShare();    break;
+      }
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [modalOpen, navigatePrev, navigateNext, toggleFavorite, toggleShare]);
 
   const copyToClipboard = useCallback(() => {
     if (!currentQuote) return;
+    // House names in data already include "House" prefix (e.g. "House Stark of Winterfell")
     const housePart = currentQuote.character.house
-      ? `, House ${currentQuote.character.house.name}`
+      ? `, ${currentQuote.character.house.name}`
       : '';
     const text = `"${currentQuote.sentence}" — ${currentQuote.character.name}${housePart}`;
     navigator.clipboard.writeText(text).then(() => {
@@ -185,12 +218,12 @@ export default function App() {
     });
   }, [currentQuote]);
 
-  const removeFavorite = useCallback((index) => {
-    setFavorites((prev) => prev.filter((_, i) => i !== index));
+  const removeFavorite = useCallback((key) => {
+    setFavorites((prev) => prev.filter((f) => getFavoriteKey(f) !== key));
   }, []);
 
   const closeModal = useCallback(() => setModalOpen(false), []);
-  const openModal = useCallback(() => setModalOpen(true), []);
+  const openModal  = useCallback(() => setModalOpen(true),  []);
 
   // --- Render ---
   return (
@@ -203,8 +236,10 @@ export default function App() {
           characters={characters}
           houseSlug={houseSlug}
           charSlug={charSlug}
+          searchTerm={searchTerm}
           onHouseChange={onHouseChange}
           onCharChange={onCharChange}
+          onSearch={handleSearch}
         />
         <QuoteCard
           quote={currentQuote}
@@ -212,6 +247,7 @@ export default function App() {
           isFavorite={isFavorite}
           shareOpen={shareOpen}
           historyIndex={historyIndex}
+          canGoNext={canGoNext}
           twitterUrl={twitterUrl}
           copyLabel={copyLabel}
           onGetNewQuote={handleGetNewQuote}
