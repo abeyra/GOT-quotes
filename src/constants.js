@@ -1,5 +1,3 @@
-export const API_BASE = 'https://api.gameofthronesquotes.xyz/v1';
-
 export const HOUSE_THEMES = {
   stark:     { bg: 'radial-gradient(50% 176%, #4a5568 80%, #2d3748 100%)', accent: '#ecf0f1', badge: '#7b8994' },
   lannister: { bg: 'radial-gradient(50% 176%, #7a6020 80%, #4a3810 100%)', accent: '#c0a060', badge: '#8b0000' },
@@ -21,36 +19,6 @@ export function buildTwitterUrl(quote) {
   const housePart = quote.character.house ? ` (House ${quote.character.house.name})` : '';
   const text = encodeURIComponent(`"${quote.sentence}" — ${quote.character.name}${housePart} #GameOfThrones`);
   return `https://twitter.com/intent/tweet?text=${text}`;
-}
-
-// Character filter: GET /v1/author/[slug]/1  → returns array of 1 quote, take [0]
-// House filter: GET /v1/house/[slug]          → returns house object with members + their quotes;
-//               pick a random quote from all member quotes client-side
-// Random: GET /v1/random                      → returns a single quote object
-export function buildFetchUrl(houseSlug, charSlug) {
-  if (charSlug) return `${API_BASE}/author/${charSlug}/1`;
-  return `${API_BASE}/random`;
-}
-
-// Extract a single random quote from a house API response.
-// /v1/house/[slug] returns: { name, slug, members: [{ name, slug, quotes: [{ sentence }] }] }
-// We flatten all quotes from all members, then pick one at random.
-export function pickRandomQuoteFromHouse(houseData) {
-  const allQuotes = [];
-  for (const member of houseData.members) {
-    for (const sentence of member.quotes) {
-      allQuotes.push({
-        sentence,
-        character: {
-          name: member.name,
-          slug: member.slug,
-          house: { name: houseData.name, slug: houseData.slug },
-        },
-      });
-    }
-  }
-  if (allQuotes.length === 0) return null;
-  return allQuotes[Math.floor(Math.random() * allQuotes.length)];
 }
 
 export function applyHouseTheme(slug) {
