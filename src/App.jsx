@@ -1,13 +1,16 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import axios from 'axios';
 import {
-  API_BASE,
   getFavoriteKey,
   buildTwitterUrl,
-  buildFetchUrl,
-  pickRandomQuoteFromHouse,
   applyHouseTheme,
 } from './constants.js';
+import {
+  getHouses,
+  getCharacters,
+  getRandomQuote,
+  getRandomQuoteByChar,
+  getRandomQuoteByHouse,
+} from './localData.js';
 
 import Header from './components/Header.jsx';
 import Hero from './components/Hero.jsx';
@@ -54,21 +57,10 @@ export default function App() {
 
   // Mount: load dropdowns + first quote
   useEffect(() => {
-    async function init() {
-      try {
-        const [housesRes, charsRes] = await Promise.all([
-          axios.get(`${API_BASE}/houses`),
-          axios.get(`${API_BASE}/characters`),
-        ]);
-        setHouses(housesRes.data);
-        setCharacters(charsRes.data);
-      } catch (err) {
-        console.error('Error loading dropdowns:', err);
-      }
-      await fetchQuote(`${API_BASE}/random`, null);
-      initializedRef.current = true;
-    }
-    init();
+    setHouses(getHouses());
+    setCharacters(getCharacters());
+    fetchQuote(null, null);
+    initializedRef.current = true;
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Filter change: reset history, fetch new quote
@@ -76,7 +68,7 @@ export default function App() {
     if (!initializedRef.current) return;
     historyRef.current = [];
     setHistoryIndex(-1);
-    fetchQuote(buildFetchUrl(houseSlug, charSlug), houseSlug);
+    fetchQuote(houseSlug, charSlug);
   }, [houseSlug, charSlug]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Persist favorites
@@ -91,11 +83,7 @@ export default function App() {
   }, [currentQuote]);
 
   // --- Core fetch function ---
-  // Handles three API response shapes:
-  //   /v1/random              → single quote object  { sentence, character }
-  //   /v1/author/[slug]/1     → array of quote objects [{ sentence, character }]  — take [0]
-  //   house filter            → fetched separately via /v1/house/[slug], picked client-side
-  async function fetchQuote(url, houseSlugOverride = null) {
+  function fetchQuote(houseSlug, charSlug) {
     if (isLoadingRef.current) return;
     isLoadingRef.current = true;
     setIsLoading(true);
@@ -103,16 +91,14 @@ export default function App() {
 
     try {
       let quote;
-
-      if (houseSlugOverride) {
-        // House filter: GET /v1/house/[slug] returns house object; pick random quote client-side
-        const res = await axios.get(`${API_BASE}/house/${houseSlugOverride}`);
-        quote = pickRandomQuoteFromHouse(res.data);
-        if (!quote) throw new Error(`No quotes found for house: ${houseSlugOverride}`);
+      if (houseSlug) {
+        quote = getRandomQuoteByHouse(houseSlug);
+        if (!quote) throw new Error(`No quotes found for house: ${houseSlug}`);
+      } else if (charSlug) {
+        quote = getRandomQuoteByChar(charSlug);
+        if (!quote) throw new Error(`No quotes found for character: ${charSlug}`);
       } else {
-        const res = await axios.get(url);
-        // /v1/author/[slug]/1 returns an array; /v1/random returns a single object
-        quote = Array.isArray(res.data) ? res.data[0] : res.data;
+        quote = getRandomQuote();
       }
 
       setTimeout(() => {
@@ -133,7 +119,7 @@ export default function App() {
   // --- Callbacks ---
 
   const handleGetNewQuote = useCallback(() => {
-    fetchQuote(buildFetchUrl(houseSlug, charSlug), houseSlug);
+    fetchQuote(houseSlug, charSlug);
   }, [houseSlug, charSlug]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const navigatePrev = useCallback(() => {
@@ -159,7 +145,7 @@ export default function App() {
         setIsFading(false);
       }, 300);
     } else {
-      fetchQuote(buildFetchUrl(houseSlug, charSlug), houseSlug);
+      fetchQuote(houseSlug, charSlug);
     }
   }, [historyIndex, houseSlug, charSlug]); // eslint-disable-line react-hooks/exhaustive-deps
 
