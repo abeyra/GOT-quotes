@@ -17,7 +17,7 @@ export default function QuoteCard({
   onCopyToClipboard,
 }) {
   const houseName = quote?.character?.house?.name
-    ? `House ${quote.character.house.name}`
+    ? quote.character.house.name
     : '';
 
   return (
