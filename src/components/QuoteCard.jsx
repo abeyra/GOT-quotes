@@ -7,6 +7,7 @@ export default function QuoteCard({
   isFavorite,
   shareOpen,
   historyIndex,
+  canGoNext,
   twitterUrl,
   copyLabel,
   onGetNewQuote,
@@ -31,6 +32,7 @@ export default function QuoteCard({
 
       <Actions
         historyIndex={historyIndex}
+        canGoNext={canGoNext}
         isFavorite={isFavorite}
         onPrev={onPrev}
         onNext={onNext}
